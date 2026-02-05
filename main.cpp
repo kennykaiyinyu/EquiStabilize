@@ -9,30 +9,22 @@ int main() {
 
     OrderBook book;
 
-    // Create some dummy orders
-    // Buy Orders (Bids)
-    auto bid1 = std::make_shared<Order>(Order{1, Order::fromDouble(100.50), 100, Side::Buy, OrderType::Limit, 1000});
-    auto bid2 = std::make_shared<Order>(Order{2, Order::fromDouble(100.45), 50, Side::Buy, OrderType::Limit, 1001});
-    auto bid3 = std::make_shared<Order>(Order{3, Order::fromDouble(100.50), 25, Side::Buy, OrderType::Limit, 1002}); // Same price as bid1
+    // 1. Add some resting orders (Liquidity)
+    std::cout << "\n[Step 1] Adding Resting Liquidity...\n";
+    book.addOrder(std::make_shared<Order>(Order{1, Order::fromDouble(100.00), 100, Side::Buy, OrderType::Limit, 1000}));
+    book.addOrder(std::make_shared<Order>(Order{2, Order::fromDouble(99.90), 50, Side::Buy, OrderType::Limit, 1001}));
 
-    // Sell Orders (Asks)
-    auto ask1 = std::make_shared<Order>(Order{4, Order::fromDouble(100.55), 100, Side::Sell, OrderType::Limit, 1003});
-    auto ask2 = std::make_shared<Order>(Order{5, Order::fromDouble(100.60), 200, Side::Sell, OrderType::Limit, 1004});
-
-    std::cout << "Adding orders to book...\n";
-    book.addOrder(bid1);
-    book.addOrder(bid2);
-    book.addOrder(bid3);
-    book.addOrder(ask1);
-    book.addOrder(ask2);
+    book.addOrder(std::make_shared<Order>(Order{3, Order::fromDouble(100.10), 100, Side::Sell, OrderType::Limit, 1002}));
+    book.addOrder(std::make_shared<Order>(Order{4, Order::fromDouble(100.20), 200, Side::Sell, OrderType::Limit, 1003}));
 
     book.printBook();
+    std::cout << "Imbalance: " << book.getImbalance() << "\n";
 
-    std::cout << "Current Spread: " << book.getSpread() << "\n";
-    std::cout << "Mid Price: " << book.getMidPrice() << "\n";
-
-    std::cout << "\nCancelling Order ID 1 (Bid @ 100.50)...\n";
-    book.cancelOrder(1);
+    // 2. Execute a Trade (Aggressive Buy)
+    std::cout << "\n[Step 2] Incoming Aggressive Buy Order (150 @ 100.15)...\n";
+    // This should eat the 100 @ 100.10 and leave 50 remaining
+    auto aggressiveBuy = std::make_shared<Order>(Order{5, Order::fromDouble(100.15), 150, Side::Buy, OrderType::Limit, 1004});
+    book.addOrder(aggressiveBuy);
 
     book.printBook();
 

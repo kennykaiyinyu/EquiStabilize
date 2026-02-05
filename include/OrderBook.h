@@ -12,8 +12,7 @@
 struct LimitLevel {
     uint64_t price;
     uint64_t totalVolume;
-    // Optimization: Use raw pointers. The OrderBook owns the memory via orderLookup.
-    std::list<Order*> orders;
+    std::list<std::shared_ptr<Order>> orders;
 
     LimitLevel(uint64_t p) : price(p), totalVolume(0) {}
 };
@@ -23,8 +22,7 @@ public:
     OrderBook();
 
     // Core actions
-    // Optimization: Pass by unique_ptr to transfer ownership (Move semantics)
-    void addOrder(std::unique_ptr<Order> order);
+    void addOrder(std::shared_ptr<Order> order);
     void cancelOrder(uint64_t orderId);
 
     // View state
@@ -33,6 +31,8 @@ public:
     // Market Data / Telemetry
     double getMidPrice() const;
     double getSpread() const;
+
+    // Imbalance: (BidVol - AskVol) / (BidVol + AskVol)
     double getImbalance() const;
 
 private:
@@ -43,13 +43,11 @@ private:
     std::map<uint64_t, std::shared_ptr<LimitLevel>> asks;
 
     // Fast lookup for order management
-    // Optimization: This map OWNS the Order objects.
-    std::unordered_map<uint64_t, std::unique_ptr<Order>> orderLookup;
+    std::unordered_map<uint64_t, std::shared_ptr<Order>> orderLookup;
 
     // Internal matching logic
     // Returns true if the incoming order was fully filled
-    // Takes raw pointer because ownership is temporarily held by caller or lookup
-    bool matchOrder(Order* order);
+    bool matchOrder(std::shared_ptr<Order> order);
 };
 
 #endif // ORDERBOOK_H

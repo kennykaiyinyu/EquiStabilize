@@ -3,7 +3,7 @@ project(EquiStabilize)
 
 set(CMAKE_CXX_STANDARD 20)
 
-include_directories(include)
+include_directories(inc)
 
 add_executable(EquiStabilize
     main.cpp
